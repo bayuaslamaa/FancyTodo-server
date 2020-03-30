@@ -1,0 +1,32 @@
+{
+  "name": "fancytodo-server",
+  "version": "1.0.0",
+  "description": "fancy todo server",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bayuaslamaa/FancyTodo-server.git"
+  },
+  "keywords": [
+    "fancy",
+    "todo"
+  ],
+  "author": "Bayu Aslamaa",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bayuaslamaa/FancyTodo-server/issues"
+  },
+  "homepage": "https://github.com/bayuaslamaa/FancyTodo-server#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "pg": "^7.18.2",
+    "sequelize": "^5.21.5"
+  },
+  "devDependencies": {
+    "dotenv": "^8.2.0"
+  }
+}
