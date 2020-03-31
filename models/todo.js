@@ -29,11 +29,27 @@ module.exports = (sequelize, DataTypes) => {
         }
       }
     },
-    status: DataTypes.BOOLEAN,
+    status: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      validate: {
+        isIn: [[true, false]],
+        notNull: {
+          msg: `the description must be not null`
+        }
+      }
+    },
     due_date: {
       type: DataTypes.DATE,
       validate: {
         isDate: true
+      }
+    },
+    UserId: {
+      type: DataTypes.INTEGER,
+      references: {
+        model: sequelize.Sequelize.User,
+        key: "id"
       }
     }
   }, {
@@ -42,6 +58,7 @@ module.exports = (sequelize, DataTypes) => {
   })
   Todo.associate = function (models) {
     // associations can be defined here
+    Todo.belongsTo(models.User)
   };
   return Todo;
 };

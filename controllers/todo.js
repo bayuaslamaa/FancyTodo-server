@@ -1,44 +1,57 @@
 const { Todo } = require("../models/index")
 
 class TodoController {
-    static create(req, res) {
+    static create(req, res, next) {
         const { title, description, status, due_date } = req.body
         Todo.create({
             title,
             description,
             status,
-            due_date
+            due_date,
+            UserId: req.currentUserId
         }).then(data => res.status(201).json(data))
-            .catch(err => res.status(400).json(err))
-            .catch(error => res.status(500).json({
-                message: `Internal server errror`,
-                error
-            }))
+            .catch(err => {
+                return next(err)
+            })
     }
     static findAll(req, res) {
-        Todo.findAll()
+        Todo.findAll({
+            where: {
+                'UserId': req.authorizedId
+            }
+        })
             .then(data => res.status(200).json({
                 message: `success getting all data`,
                 todo: data
             }))
-            .catch(err => res.status(500).json(err))
+            .catch(err => {
+                return next(err)
+            })
     }
 
-    static findByPk(req, res) {
+    static findByPk(req, res, next) {
         const id = req.params.id
-        Todo.findByPk(id)
+        Todo.findOne({
+            where: {
+                'id': id,
+                'UserId': req.authorizedId
+            }
+        })
             .then(data => {
                 if (data) { //handle data null
                     res.status(200).json({
                         message: `success getting data with id: ${id}`,
                         todo: data
                     })
+                } else {
+                    return next({
+                        name: 'NotFound'
+                    })
                 }
-                throw new Error
             })
-            .catch(err => res.status(404).json({
-                Error: `id not found`
-            }))
+            .catch(err => {
+                return next(err)
+            })
     }
 
     static update(req, res) {
@@ -47,28 +60,43 @@ class TodoController {
         let updated = { title, description, status, due_date }
         Todo.update(updated, {
             where: {
-                "id": id
+                "id": id,
+                "UserId": req.authorizedId
             }
         }).then(data => {
-            return Todo.findByPk(id)
-        }).catch(err => res.status(400).json(err))
+            return Todo.findOne({
+                where: {
+                    'id': id,
+                    "UserId": req.authorizedId
+                }
+            })
+        }).catch(err => {
+            return next(err)
+        })
             .then(updatedData => {
                 if (updatedData) {
                     res.status(200).json({
                         message: `success updating data with id: ${id}`,
                         todo: updatedData
                     })
+                } else {
+                    return next({
+                        name: 'NotFound'
+                    })
                 }
-                throw new Error
             })
-            .catch(error => res.status(404).json({
-                error: `not found`
-            }))
-            .catch(err => res.status(500).json(err))
+            .catch(err => {
+                return next(err)
+            })
     }
     static destroy(req, res) {
         const id = req.params.id
-        Todo.findByPk(id)
+        Todo.findOne({
+            where: {
+                'id': id,
+                "UserId": req.authorizedId
+            }
+        })
             .then(deleted => {
                 if (deleted) {
                     res.status(200).json({
@@ -76,18 +104,23 @@ class TodoController {
                         deleted: deleted
                     })
                 } else {
-                    throw new Error
+                    return next({
+                        name: 'NotFound'
+                    })
                 }
                 return Todo.destroy({
                     where: {
-                        "id": id
+                        "id": id,
+                        "UserId": req.authorizedId
                     }
                 })
             })
-            .catch(error => res.status(404).json({
-                error: `not found`
-            }))
-            .catch(err => res.status(500).json(err))
+            .catch(error => {
+                return next(error)
+            })
+            .catch(err => {
+                return next(err)
+            })
     }
 
 }
