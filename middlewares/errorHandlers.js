@@ -40,6 +40,13 @@ function errorHandlers(err, req, res, next) {
             })
             break;
 
+        case 'Error':
+            return res.status(404).json({
+                code: 404,
+                type: 'Not Found',
+            })
+            break;
+
         default:
             return res.status(500).json({
                 err: `InternalServerError`
