@@ -1,4 +1,4 @@
-const { Todo } = require("../models/index")
+const { User, Todo } = require("../models/index")
 
 class TodoController {
     static create(req, res, next) {
@@ -15,15 +15,31 @@ class TodoController {
             })
     }
     static findAll(req, res) {
+        let dataTodo
         Todo.findAll({
             where: {
                 'UserId': req.authorizedId
-            }
+            },
         })
-            .then(data => res.status(200).json({
-                message: `success getting all data`,
-                todo: data
-            }))
+            .then(data => {
+                dataTodo = data
+                return User.findAll({
+                    where: {
+                        'id': req.authorizedId
+                    }
+                })
+            })
+            .then(result => {
+                const { email } = result[0]
+                res.status(200).json({
+                    message: `success getting all data`,
+                    todo: dataTodo,
+                    user: email
+
+
+                })
+                // console.log(email)
+            })
             .catch(err => {
                 return next(err)
             })
