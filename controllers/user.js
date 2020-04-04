@@ -1,6 +1,8 @@
 const { User } = require("../models/index")
 const { decryptPassword } = require("../helpers/bcrypt")
 const { generateToken } = require("../helpers/jwt")
+const { OAuth2Client } = require('google-auth-library');
+
 
 class UserController {
     static register(req, res, next) {
@@ -14,7 +16,7 @@ class UserController {
                     id: result.id,
                     email: result.email
                 }
-                let token = generateToken(user)
+                let token = generateToken(payload)
                 return res.status(201).json({
                     'id': user.id,
                     'email': user.email,
@@ -50,26 +52,63 @@ class UserController {
                         access_token: generateToken(user)
                     })
                 } else {
-                    // return res.status(400).json({
-                    //     type: 'Bad Request',
-                    //     msg: 'Invalid email/password'
-                    // }
                     return next({
                         name: 'InvalidLogin'
                     })
                     // )
                 }
             } else {
-                // return res.status(400).json({
-                //     type: 'Bad Request',
-                //     msg: 'Invalid email/password'
-                // })
                 return next({
                     name: 'InvalidLogin'
                 })
             }
         })
     }
-}
 
+    static googleSign(req, res, next) {
+        const client = new OAuth2Client(process.env.CLIENT_ID)
+        let email = ''
+        client.verifyIdToken({
+            idToken: req.body.id_token,
+            audience: process.env.CLIENT_ID
+        }).then(ticket => {
+            email = ticket.getPayload().email
+            return User.findOne({
+                where: {
+                    "email": payload.email
+                }
+            })
+        }).then(data => {
+            if (data) {
+                let payload = {
+                    email: data.email,
+                    password: data.password
+                }
+                let access_token = generateToken(payload)
+                return res.status(200).json({
+                    id: data.id,
+                    email: data.email,
+                    access_token
+                })
+            } else {
+                return User.create({
+                    email,
+                    password: 'default'
+                })
+            }
+        }).then(data => {
+
+            let payload = {
+                email: data.email,
+                password: data.password
+            }
+            let access_token = generateToken(payload)
+            return res.status(201).json({
+                id: data.id,
+                email: data.email,
+                access_token
+            })
+        })
+    }
+}
 module.exports = UserController
