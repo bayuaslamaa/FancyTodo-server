@@ -72,17 +72,20 @@ class UserController {
             idToken: req.body.id_token,
             audience: process.env.CLIENT_ID
         }).then(ticket => {
+            // console.log('ini tiket', ticket)
             email = ticket.getPayload().email
             return User.findOne({
                 where: {
-                    "email": payload.email
+                    "email": email
                 }
             })
         }).then(data => {
+            console.log(data.password);
+
             if (data) {
                 let payload = {
-                    email: data.email,
-                    password: data.password
+                    id: data.id,
+                    email: data.email
                 }
                 let access_token = generateToken(payload)
                 return res.status(200).json({
@@ -97,10 +100,9 @@ class UserController {
                 })
             }
         }).then(data => {
-
             let payload = {
-                email: data.email,
-                password: data.password
+                id: data.id,
+                email: data.email
             }
             let access_token = generateToken(payload)
             return res.status(201).json({
@@ -108,6 +110,8 @@ class UserController {
                 email: data.email,
                 access_token
             })
+        }).catch(err => {
+            return next(err)
         })
     }
 }
